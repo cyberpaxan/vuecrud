@@ -17,6 +17,18 @@
             @remove="removePost"
         />
         <div v-else>Идет загрузка постов...</div>
+        <div ref="observer" class="observer"></div>
+        <!-- <div class="page__wrapper">
+            <div
+                v-for="pageNumber in totalPages"
+                :key="pageNumber"
+                class="page"
+                :class="{ 'current-page': page === pageNumber }"
+                @click="changePage(pageNumber)"
+            >
+                {{ pageNumber }}
+            </div>
+        </div> -->
     </div>
 </template>
 
@@ -42,6 +54,9 @@ export default {
             isPostsLoading: false,
             selectedSort: '',
             searchQuery: '',
+            page: 1,
+            limit: 10,
+            totalPages: 0,
             sortOptions: [
                 { value: 'title', name: 'По названию' },
                 { value: 'body', name: 'По содержимому' },
@@ -66,7 +81,16 @@ export default {
                 this.isPostsLoading = true;
 
                 const response = await axios.get(
-                    'https://jsonplaceholder.typicode.com/posts?_limit=10'
+                    'https://jsonplaceholder.typicode.com/posts',
+                    {
+                        params: {
+                            _page: this.page,
+                            _limit: this.limit,
+                        },
+                    }
+                );
+                this.totalPages = Math.ceil(
+                    response.headers['x-total-count'] / this.limit
                 );
                 this.posts = response.data;
             } catch (error) {
@@ -75,9 +99,48 @@ export default {
                 this.isPostsLoading = false;
             }
         },
+
+        async loadMorePosts() {
+            try {
+                this.page += 1;
+                const response = await axios.get(
+                    'https://jsonplaceholder.typicode.com/posts',
+                    {
+                        params: {
+                            _page: this.page,
+                            _limit: this.limit,
+                        },
+                    }
+                );
+                this.totalPages = Math.ceil(
+                    response.headers['x-total-count'] / this.limit
+                );
+                this.posts = [...this.posts, ...response.data];
+            } catch (error) {
+                alert('Ошибка');
+            }
+        },
+
+        // changePage(pageNumber) {
+        //     this.page = pageNumber;
+        //     this.fetchPosts();
+        // },
     },
     mounted() {
         this.fetchPosts();
+        console.log(this.$refs.observer);
+
+        const options = {
+            rootMargin: '0px',
+            threshold: 1.0,
+        };
+        const callback = (entries, observer) => {
+            if (entries[0].isIntersecting) {
+                this.loadMorePosts();
+            }
+        };
+        const observer = new IntersectionObserver(callback, options);
+        observer.observe(this.$refs.observer);
     },
     computed: {
         sortedPosts() {
@@ -113,5 +176,25 @@ export default {
     margin: 15px 0;
     display: flex;
     justify-content: space-between;
+}
+
+.page__wrapper {
+    display: flex;
+    margin-top: 15px;
+}
+
+.page {
+    border: 2px solid black;
+    padding: 10px;
+    margin: 5px;
+}
+
+.current-page {
+    border: 3px solid teal;
+}
+
+.observer {
+    height: 30px;
+    background: green;
 }
 </style>
