@@ -18,8 +18,8 @@ const routes = [
         component: About
     },
     {
-        path: '/posts/:id/:title/:body',
-        component: PostIdPage
+        path: '/posts/:id',
+        component: PostIdPage,
     }
 ]
 

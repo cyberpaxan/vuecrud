@@ -18,17 +18,6 @@
         />
         <div v-else>Идет загрузка постов...</div>
         <div v-intersection="loadMorePosts" class="observer"></div>
-        <!-- <div class="page__wrapper">
-            <div
-                v-for="pageNumber in totalPages"
-                :key="pageNumber"
-                class="page"
-                :class="{ 'current-page': page === pageNumber }"
-                @click="changePage(pageNumber)"
-            >
-                {{ pageNumber }}
-            </div>
-        </div> -->
     </div>
 </template>
 
@@ -121,10 +110,7 @@ export default {
             }
         },
 
-        // changePage(pageNumber) {
-        //     this.page = pageNumber;
-        //     this.fetchPosts();
-        // },
+
     },
     mounted() {
         this.fetchPosts();
